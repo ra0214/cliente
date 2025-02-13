@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from .models import Carrera
 from .vistas import FormCarrera
 from django.shortcuts import redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
 
 def index(request):
@@ -24,6 +24,7 @@ class HomePageView(TemplateView):
 class AboutPageView(TemplateView):
     template_name = "about.html"
 
+@method_decorator(permission_required('tutorial.add_carrera', login_url="/", raise_exception=False), name='dispatch')
 class CarrerasCreateViewPage(TemplateView):
     template_name = "carreras_form.html"
     def get(self, request, *args, **kwargs):
@@ -38,14 +39,15 @@ class CarrerasCreateViewPage(TemplateView):
             return redirect("home")
         else:
             return self.render_to_response({'form':form})
-        
+
 class CarrerasEditarViewPage(TemplateView):
     template_name = "carreras_form.html"
     def get(self, request, pk, *args, **kwargs):
         carrera = get_object_or_404(Carrera, pk=pk)
         form = FormCarrera(instance= carrera)
-        return self.render_to_response({'form': form})
+        return self.render_to_response({'form': form, 'has_permission': request.user.has_perm('tutorial.change_carrera')})
     
+    @method_decorator(permission_required('tutorial.change_carrera', login_url="/", raise_exception=False), name='dispatch')
     def post(self, request, pk, *args, **kwargs):
         carrera = get_object_or_404(Carrera, pk=pk)
         form = FormCarrera(request.POST, instance=carrera)

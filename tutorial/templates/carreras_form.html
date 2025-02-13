@@ -8,6 +8,10 @@
     {% csrf_token %}
 
     {{form.as_p}}
+    {% if has_permission %}
     <button type="submit">Enviar</button>
+    {% else %}
+    <button type="submit" disabled>Enviar</button>
+    {% endif %}
 </form>
 {% endblock content %}
